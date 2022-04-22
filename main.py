@@ -51,18 +51,26 @@ def subscribed(client, userdata, mid, granted_qos):
 def recv_message(client, userdata, message):
     print("Received: ", message.payload.decode("utf-8"))
     temp_data = {'value': True}
-    cmd = 1
+    cmd = 0
     #TODO: Update the cmd to control 2 devices
     try:
         jsonobj = json.loads(message.payload)
         if jsonobj['method'] == "setLED":
             temp_data['value'] = jsonobj['params']
             client.publish('v1/devices/me/BUTTON_LED', json.dumps(temp_data), 1)
-            cmd = 2
+            if temp_data['value'] is True:
+                cmd = 1
+            if temp_data['value'] is False:
+                cmd = 0
+
         if jsonobj['method'] == "setFAN":
             temp_data['value'] = jsonobj['params']
             client.publish('v1/devices/me/BUTTON_FAN', json.dumps(temp_data), 1)
-            cmd = 3
+            if temp_data['value'] is True:
+                cmd = 3
+            if temp_data['value'] is False:
+                cmd = 2
+
     except:
         pass
 
@@ -90,7 +98,7 @@ client.on_message = recv_message
 
 while True:
 
-    if len(bbc_port) >  0:
+    if len(bbc_port) > 0:
         readSerial()
 
     time.sleep(5)
